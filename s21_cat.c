@@ -6,25 +6,15 @@
 #include <unistd.h>
 #include <ctype.h>
 
-#define BUFF 1024
 
 void print_file_cout(const char* name);
-int count_simb(const char* name);
 void print(const char* name);
 void printNotNUll(const char* name);
 
 
 int main(int argc, char* argv[]) {
-  // print_file(argv[2]);
   int opt;
-
-  //Считаем кол-во симвволов (НЕ РАБОТАЕТ!) неправильно argv
-  // int counter = count_simb(argv[2]);
-  // printf("Counter: %d\n",counter);
-
-  //массивчик для символов
-  // char* buff=(char*)malloc(counter*sizeof(char));
-
+				
   FILE* file = NULL;
   while ((opt = getopt(argc, argv, "bn")) != -1 || opt == -1) {
     switch (opt) {
@@ -48,29 +38,35 @@ int main(int argc, char* argv[]) {
         break;
       default:
         print(argv[1]);
-        // free(buff);
         return 0;
     }
   }
 
-  // free(buff);
   return 0;
 }
 
 //функция ростого вывода содержимого
 void print(const char* name) {
-  FILE* file = fopen(name, "rt");
-  if (file == NULL) {
-    // fprintf(stderr, "Null file");
-    return;
-  } else {
-    int c = fgetc(file);
-    while (c != EOF) {
-      putc(c, stdout);
-      c = fgetc(file);
+    FILE* file = fopen(name, "rt");
+  
+    if (file == NULL) {
+        if (name != NULL) {
+            printf("Error '%s'\n", name);
+						return;
+        } else {
+					char ch;
+					while (read(STDIN_FILENO, &ch, 1) > 0) {
+						  putc(ch, stdout);
+					}
+				}
+    } else {
+        int c = fgetc(file);
+        while (c != EOF) {
+            putc(c, stdout);
+            c = fgetc(file);
+        }
+        fclose(file);
     }
-  }
-  fclose(file);
 }
 
 // Функция для вывода содержимого файла с подсчетом
