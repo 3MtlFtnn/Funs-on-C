@@ -10,13 +10,13 @@
 void print_file_cout(const char* name);
 void print(const char* name);
 void printNotNUll(const char* name);
-
+void print_dollar(const char* name);
 
 int main(int argc, char* argv[]) {
   int opt;
 				
   FILE* file = NULL;
-  while ((opt = getopt(argc, argv, "bn")) != -1 || opt == -1) {
+  while ((opt = getopt(argc, argv, "bne")) != -1 || opt == -1) {
     switch (opt) {
       case 'n':
         for (int i = optind; i < argc; i++) {
@@ -27,6 +27,15 @@ int main(int argc, char* argv[]) {
           print_file_cout(argv[i]);
         }
         break;
+			case 'e':
+				for(int i = optind; i<argc; i++){
+					file = fopen(argv[i], "r");
+					if(file==NULL){
+						fprintf(stderr, "Cant open %s", argv[i]);
+					}
+					print_dollar(argv[i]);
+				}
+				break;
       case 'b':
         for (int i = optind; i < argc; i++) {
           file = fopen(argv[i], "r");
@@ -45,13 +54,32 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
+//функция для вывода содержимого файла, в конце ставится '$'
+void print_dollar(const char* name){
+	FILE* file = fopen(name, "rt");
+	if(file == NULL){
+		printf("Error open file");
+	}
+	char buf[1024];
+	while(fgets(buf, sizeof(buf), file)){
+		int lineLenght = strlen(buf);
+		for(int i = 0; i<lineLenght; i++){
+			if(buf[i]=='\n'){
+				printf("$\n");
+			}else{
+				putc(buf[i], stdout);
+			}
+		}
+	}
+	fclose(file);
+}
+
 //функция ростого вывода содержимого
 void print(const char* name) {
     FILE* file = fopen(name, "rt");
   
     if (file == NULL) {
         if (name != NULL) {
-            printf("Error '%s'\n", name);
 						return;
         } else {
 					char ch;
