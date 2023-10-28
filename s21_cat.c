@@ -12,14 +12,14 @@ void print(const char* name);
 void printNotNUll(const char* name);
 void print_dollar(const char* name);
 void print_spaces(const char* name);
-
+void print_tab(const char* name);
 
 
 int main(int argc, char* argv[]) {
   int opt;
 
   FILE* file = NULL;
-  while ((opt = getopt(argc, argv, "bnes")) != -1 || opt == -1) {
+  while ((opt = getopt(argc, argv, "bnest")) != -1 || opt == -1) {
     switch (opt) {
       case 'n':
         for (int i = optind; i < argc; i++) {
@@ -57,6 +57,15 @@ int main(int argc, char* argv[]) {
 					print_spaces(argv[i]);
 				}
 				break;
+			case 't':
+				for(int i = optind; i < argc; i++){
+					file = fopen(argv[i], "r");
+					if (file==NULL){
+						fprintf(stderr, "Cant opeen parament %s", argv[i]);
+					}
+					print_tab(argv[i]);
+				}
+				break;
 			default:
         print(argv[1]);
         return 0;
@@ -75,17 +84,15 @@ void print_spaces(const char* name) {
     }
 
     char buffer[1488];
-    int emptyLineCount = 0; // Счетчик пустых строк
+    int emptyLineCount = 0;
 
     while (fgets(buffer, sizeof(buffer), file)) {
         int length = strlen(buffer);
 
-        // Проверяем, является ли строка пустой
         int isEmptyLine = 1;
         for (int i = 0; i < length; i++) {
             if (!isspace(buffer[i])) {
                 isEmptyLine = 0;
-                
             }
         }
 
@@ -98,7 +105,6 @@ void print_spaces(const char* name) {
         else if (emptyLineCount > 0) {
             continue;
         }
-        // Если строка пустая, но предыдущая строка была не пустой, выводим ее
         else {
             fputs(buffer, stdout);
             emptyLineCount++;
@@ -128,6 +134,30 @@ void print_dollar(const char* name){
 	}
 	fclose(file);
 }
+
+//Функция ставит в конце '$' и табы отмечает '^I'
+void print_tab(const char* name){
+	FILE* file = fopen(name, "rt");
+	if(file==NULL){
+		printf("Error open this file");
+	}
+	char buffer[1024];
+	while(fgets(buffer, sizeof(buffer),file)){
+		int lenght = strlen(buffer);
+		for(int i = 0; i<lenght; i++){
+			if(buffer[i]=='\t'){
+				buffer[i]='^';
+				printf("^I");
+			}else if(buffer[i]=='\n'){
+				printf("$\n");
+			}else{
+				putc(buffer[i], stdout);
+			}
+		}
+	}
+	fclose(file);
+}
+
 
 //функция ростого вывода содержимого
 void print(const char* name) {
