@@ -11,12 +11,15 @@ void print_file_cout(const char* name);
 void print(const char* name);
 void printNotNUll(const char* name);
 void print_dollar(const char* name);
+void print_spaces(const char* name);
+
+
 
 int main(int argc, char* argv[]) {
   int opt;
-				
+
   FILE* file = NULL;
-  while ((opt = getopt(argc, argv, "bne")) != -1 || opt == -1) {
+  while ((opt = getopt(argc, argv, "bnes")) != -1 || opt == -1) {
     switch (opt) {
       case 'n':
         for (int i = optind; i < argc; i++) {
@@ -45,7 +48,16 @@ int main(int argc, char* argv[]) {
           printNotNUll(argv[i]);
         }
         break;
-      default:
+			case 's':
+				for(int i = optind; i < argc; i++){
+					file = fopen(argv[i], "r");
+					if(file==NULL){
+						fprintf(stderr, "Cant open this parament %s", argv[i]);
+					}
+					print_spaces(argv[i]);
+				}
+				break;
+			default:
         print(argv[1]);
         return 0;
     }
@@ -54,6 +66,49 @@ int main(int argc, char* argv[]) {
   return 0;
 }
 
+//функция для слияния нескольких пустых строк
+void print_spaces(const char* name) {
+    FILE* file = fopen(name, "rt");
+    if (file == NULL) {
+        fprintf(stderr, "Can't open file\n");
+        return;
+    }
+
+    char buffer[1488];
+    int emptyLineCount = 0; // Счетчик пустых строк
+
+    while (fgets(buffer, sizeof(buffer), file)) {
+        int length = strlen(buffer);
+
+        // Проверяем, является ли строка пустой
+        int isEmptyLine = 1;
+        for (int i = 0; i < length; i++) {
+            if (!isspace(buffer[i])) {
+                isEmptyLine = 0;
+                
+            }
+        }
+
+        // Если строка не пустая, выводим ее и сбрасываем счетчик пустых строк
+        if (!isEmptyLine) {
+            fputs(buffer, stdout);
+            emptyLineCount = 0;
+        }
+        // Если строка пустая и предыдущая строка тоже была пустой, пропускаем ее
+        else if (emptyLineCount > 0) {
+            continue;
+        }
+        // Если строка пустая, но предыдущая строка была не пустой, выводим ее
+        else {
+            fputs(buffer, stdout);
+            emptyLineCount++;
+        }
+    }
+
+    fclose(file);
+}
+
+				
 //функция для вывода содержимого файла, в конце ставится '$'
 void print_dollar(const char* name){
 	FILE* file = fopen(name, "rt");
