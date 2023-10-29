@@ -17,9 +17,17 @@ void print_tab(const char* name);
 
 int main(int argc, char* argv[]) {
   int opt;
+	int opt_index = 0;
+
+	static struct option long_option[]={
+		{"number-nonblank", no_argument, 0, 'b'},
+		{"squeeze-blank", no_argument, 0, 's'},
+		{"number", no_argument, 0, 'n'},
+		{0,0,0,0}
+	};
 
   FILE* file = NULL;
-  while ((opt = getopt(argc, argv, "bnest")) != -1 || opt == -1) {
+  while ((opt = getopt_long(argc, argv, "bnest", long_option, &opt_index)) != -1 || opt == -1) {
     switch (opt) {
       case 'n':
         for (int i = optind; i < argc; i++) {
