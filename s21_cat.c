@@ -23,13 +23,14 @@ int main(int argc, char* argv[]) {
 		{"number-nonblank", no_argument, 0, 'b'},
 		{"squeeze-blank", no_argument, 0, 's'},
 		{"number", no_argument, 0, 'n'},
+		{"show-ends",no_argument,0, 'e'},
 		{0,0,0,0}
 	};
 
   FILE* file = NULL;
-  while ((opt = getopt_long(argc, argv, "bnest", long_option, &opt_index)) != -1 || opt == -1) {
+  while ((opt = getopt_long(argc, argv, "bnestv::", long_option, &opt_index)) != -1 || opt == -1) {
     switch (opt) {
-      case 'n':
+			case 'n':
         for (int i = optind; i < argc; i++) {
           file = fopen(argv[i], "r");
           if (file == NULL) {
@@ -73,6 +74,17 @@ int main(int argc, char* argv[]) {
 					}
 					print_tab(argv[i]);
 				}
+				break;
+			case 'v':
+				for(int i = optind; i<argc; i++){
+					file = fopen(agv[i[=], "r");
+					if (file==NULL){
+						fprintf(stderr, "In process get error in file %s", argv[i]);
+					}
+					//Типо функция тут должна быть или переход на флаги 
+					break;
+			case '?':
+				printf("Error, unknown parametr: %s \n", argv[1]);
 				break;
 			default:
         print(argv[1]);
