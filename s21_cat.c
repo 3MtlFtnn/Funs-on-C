@@ -9,6 +9,7 @@
 
 void print_file_cout(const char* name);
 void print(const char* name);
+void print_vET(const char* name);
 void printNotNUll(const char* name);
 void print_dollar(const char* name);
 void print_spaces(const char* name);
@@ -18,12 +19,14 @@ void print_tab(const char* name);
 int main(int argc, char* argv[]) {
   int opt;
 	int opt_index = 0;
+	int flag_v = 0;
 
 	static struct option long_option[]={
 		{"number-nonblank", no_argument, 0, 'b'},
 		{"squeeze-blank", no_argument, 0, 's'},
 		{"number", no_argument, 0, 'n'},
 		{"show-ends",no_argument,0, 'e'},
+		{"v", optional_argument, 0, 'v'},
 		{0,0,0,0}
 	};
 
@@ -76,16 +79,22 @@ int main(int argc, char* argv[]) {
 				}
 				break;
 			case 'v':
-				for(int i = optind; i<argc; i++){
-					file = fopen(agv[i[=], "r");
-					if (file==NULL){
-						fprintf(stderr, "In process get error in file %s", argv[i]);
+				for(int i=optind;i<argc;i++){
+					if(optarg!=NULL){
+						if(strcmp(optarg,"T")==0){
+							print_dollar(argv[i]);
+						
+						}else if (strcmp(optarg, "E")==0) {
+							print_vET(argv[i]);
+						}
 					}
-					//Типо функция тут должна быть или переход на флаги 
-					break;
+				}
+				break;
 			case '?':
+				printf("Look! %s", optarg);
 				printf("Error, unknown parametr: %s \n", argv[1]);
 				break;
+			
 			default:
         print(argv[1]);
         return 0;
@@ -155,6 +164,24 @@ void print_dollar(const char* name){
 	fclose(file);
 }
 
+//Для флага -vET
+void print_vET(const char* name){
+	FILE* file = fopen(name, "rt");
+	if(file==NULL){
+		printf("Error openning");
+	}
+	char buff[1024];
+	while(fgets(buff, sizeof(buff), file)){
+		int lenght = strlen(buff);
+		for(int i = 0; i<lenght; i++){
+			if(buff[i]=='\t'){
+				printf("^I");
+			}else{
+				putc(buff[i],stdout);
+			}
+		}
+	}
+}
 //Функция ставит в конце '$' и табы отмечает '^I'
 void print_tab(const char* name){
 	FILE* file = fopen(name, "rt");
