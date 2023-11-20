@@ -1,4 +1,4 @@
-# Funs-on-C
+# GNU/C
 Just fun staff on C
 
 ##New filees:
