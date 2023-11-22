@@ -6,291 +6,146 @@
 #include <unistd.h>
 #include <ctype.h>
 
+typedef struct {
+  int count;
+  int print;
+  int vET;
+  int NN;
+  int dollar;
+  int spaces;
+  int tab;
+  int error;
+} flags;
 
-void print_file_cout(const char* name);
-void print(const char* name);
-void print_vET(const char* name);
-void printNotNUll(const char* name);
-void print_dollar(const char* name);
-void print_spaces(const char* name);
-void print_tab(const char* name);
-
+int readd(int argc,  char* argv[], flags* flag);
+void out(char* fp, flags* flag);
 
 int main(int argc, char* argv[]) {
   int opt;
-	int opt_index = 0;
-	int flag_v = 0;
+  int opt_index = 0;
+  int files_count;
+  flags option = {0};
+  files_count = readd(argc, argv, &option);
 
-	static struct option long_option[]={
-		{"number-nonblank", no_argument, 0, 'b'},
-		{"squeeze-blank", no_argument, 0, 's'},
-		{"number", no_argument, 0, 'n'},
-		{"show-ends",no_argument,0, 'e'},
-		{"v", optional_argument, 0, 'v'},
-		{0,0,0,0}
-	};
-
-  FILE* file = NULL;
-  while ((opt = getopt_long(argc, argv, "bnestv::", long_option, &opt_index)) != -1 || opt == -1) {
-    switch (opt) {
-			case 'n':
-        for (int i = optind; i < argc; i++) {
-          file = fopen(argv[i], "r");
-          if (file == NULL) {
-            fprintf(stderr, "Cant open file: %s", argv[i]);
-          }
-          print_file_cout(argv[i]);
-        }
-        break;
-			case 'e':
-				for(int i = optind; i<argc; i++){
-					file = fopen(argv[i], "r");
-					if(file==NULL){
-						fprintf(stderr, "Cant open %s", argv[i]);
-					}
-					print_dollar(argv[i]);
-				}
-				break;
-      case 'b':
-        for (int i = optind; i < argc; i++) {
-          file = fopen(argv[i], "r");
-          if (file == NULL) {
-            fprintf(stderr, "Cant openn %s", argv[i]);
-          }
-          printNotNUll(argv[i]);
-        }
-        break;
-			case 's':
-				for(int i = optind; i < argc; i++){
-					file = fopen(argv[i], "r");
-					if(file==NULL){
-						fprintf(stderr, "Cant open this parament %s", argv[i]);
-					}
-					print_spaces(argv[i]);
-				}
-				break;
-			case 't':
-				for(int i = optind; i < argc; i++){
-					file = fopen(argv[i], "r");
-					if (file==NULL){
-						fprintf(stderr, "Cant opeen parament %s", argv[i]);
-					}
-					print_tab(argv[i]);
-				}
-				break;
-			case 'v':
-				for(int i=optind;i<argc;i++){
-					if(optarg!=NULL){
-						if(strcmp(optarg,"T")==0){
-							print_dollar(argv[i]);
-						
-						}else if (strcmp(optarg, "E")==0) {
-							print_vET(argv[i]);
-						}
-					}
-				}
-				break;
-			case '?':
-				printf("Look! %s", optarg);
-				printf("Error, unknown parametr: %s \n", argv[1]);
-				break;
-			
-			default:
-        print(argv[1]);
-        return 0;
+  if (option.error == 1) {
+    fprintf(stderr, "Error!!!");
+    return 1;
+  } else {
+    while (files_count < argc) {
+      char* fp;
+      fp = argv[files_count];
+      out(argv[files_count], &option);
+      files_count++;
     }
   }
 
   return 0;
 }
 
-//функция для слияния нескольких пустых строк
-void print_spaces(const char* name) {
-    FILE* file = fopen(name, "rt");
-    if (file == NULL) {
-        fprintf(stderr, "Can't open file\n");
-        return;
+int readd(int argc,  char* argv[], flags* flag) {
+  const struct option long_option[] = {
+      {"number-nonblank", no_argument, 0, 'b'},
+      {"squeeze-blank", no_argument, 0, 's'},
+      {"number", no_argument, 0, 'n'},
+      {"show-ends", no_argument, 0, 'e'},
+  };
+  int opt = 0;
+
+  while ((opt = getopt_long(argc, argv, "beEnstTv?", long_option, NULL)) != -1) {
+    switch (opt) {
+      case 'b':
+        flag->NN = 1;
+        break;
+      case 'e':
+        flag->dollar = flag->vET = 1;
+        break;
+      case 'E':
+        flag->dollar = 1;
+        break;
+      case 'n':
+        flag->count = 1;
+        break;
+      case 's':
+        flag->spaces = 1;
+        break;
+      case 't':
+        flag->tab = flag->vET = 1;
+        break;
+      case 'T':
+        flag->tab = 1;
+        break;
+      case 'v':
+        flag->vET = 1;
+        break;
+      case '?':
+        flag->error = 1;
+        break;
     }
-
-    char buffer[1488];
-    int emptyLineCount = 0;
-
-    while (fgets(buffer, sizeof(buffer), file)) {
-        int length = strlen(buffer);
-
-        int isEmptyLine = 1;
-        for (int i = 0; i < length; i++) {
-            if (!isspace(buffer[i])) {
-                isEmptyLine = 0;
-            }
-        }
-
-        // Если строка не пустая, выводим ее и сбрасываем счетчик пустых строк
-        if (!isEmptyLine) {
-            fputs(buffer, stdout);
-            emptyLineCount = 0;
-        }
-        // Если строка пустая и предыдущая строка тоже была пустой, пропускаем ее
-        else if (emptyLineCount > 0) {
-            continue;
-        }
-        else {
-            fputs(buffer, stdout);
-            emptyLineCount++;
-        }
-    }
-
-    fclose(file);
+  }
+  return optind;
 }
 
-				
-//функция для вывода содержимого файла, в конце ставится '$'
-void print_dollar(const char* name){
-	FILE* file = fopen(name, "rt");
-	if(file == NULL){
-		printf("Error open file");
-	}
-	char buf[1024];
-	while(fgets(buf, sizeof(buf), file)){
-		int lineLenght = strlen(buf);
-		for(int i = 0; i<lineLenght; i++){
-			if(buf[i]=='\n'){
-				printf("$\n");
-			}else{
-				putc(buf[i], stdout);
-			}
-		}
-	}
-	fclose(file);
-}
+void out(char* fp, flags* flag)
+{
+  FILE* file = fopen(fp, "r");
+  if (file == NULL) {
+    fprintf(stderr, "Error with opening file");
+    return;
+  }
 
-//Для флага -vET
-void print_vET(const char* name){
-	FILE* file = fopen(name, "rt");
-	if(file==NULL){
-		printf("Error openning");
-	}
-	char buff[1024];
-	while(fgets(buff, sizeof(buff), file)){
-		int lenght = strlen(buff);
-		for(int i = 0; i<lenght; i++){
-			if(buff[i]=='\t'){
-				printf("^I");
-			}else{
-				putc(buff[i],stdout);
-			}
-		}
-	}
-}
-//Функция ставит в конце '$' и табы отмечает '^I'
-void print_tab(const char* name){
-	FILE* file = fopen(name, "rt");
-	if(file==NULL){
-		printf("Error open this file");
-	}
-	char buffer[1024];
-	while(fgets(buffer, sizeof(buffer),file)){
-		int lenght = strlen(buffer);
-		for(int i = 0; i<lenght; i++){
-			if(buffer[i]=='\t'){
-				buffer[i]='^';
-				printf("^I");
-			}else if(buffer[i]=='\n'){
-				printf("$\n");
-			}else{
-				putc(buffer[i], stdout);
-			}
-		}
-	}
-	fclose(file);
-}
-
-
-//функция ростого вывода содержимого
-void print(const char* name) {
-    FILE* file = fopen(name, "rt");
-  
-    if (file == NULL) {
-        if (name != NULL) {
-						return;
-        } else {
-					char ch;
-					while (read(STDIN_FILENO, &ch, 1) > 0) {
-						  putc(ch, stdout);
-					}
-				}
-    } else {
-        int c = fgetc(file);
-        while (c != EOF) {
-            putc(c, stdout);
-            c = fgetc(file);
+  int ch;
+  int prev = '\n';
+  int current = 1;
+  int squeeze = 0;
+  while ((ch = fgetc(file)) != EOF) {
+    if (flag->spaces == 1) {
+      if (ch == '\n' && prev == '\n') {
+        if (squeeze == 1) {
+          continue;
         }
-        fclose(file);
-    }
-}
-
-// Функция для вывода содержимого файла с подсчетом
-void print_file_cout(const char* name) {
-  FILE* f = fopen(name, "rt");
-
-  if (f != NULL) {
-    int chr = fgetc(f);
-    int count = 1;
-    printf("%d ", count);
-    while (chr != EOF) {
-      putc(chr, stdout);
-      if (chr == '\n') {
-        count++;
-        printf("%d ", count);
+        squeeze++;
+      } else {
+        squeeze = 0;
       }
-      chr = fgetc(f);
     }
-    fclose(f);
+
+    if (flag->NN == 1) {
+      if (prev == '\n' && ch != '\n') {
+        printf("%*d\t", 6, current);
+        current++;
+      }
+    }
+
+    if (flag->count == 1 && flag->NN == 0 && prev == '\n') {
+      printf("%*d\t", 6, current);
+      current++;
+    }
+
+    if (flag->dollar == 1 && ch == '\n') {
+      putchar('$');
+    }
+
+    if (flag->tab == 1 && ch == '\t') {
+      printf("^");
+      ch = 'I';
+    }
+
+    if (flag->vET == 1) {
+      if ((ch >= 0 && ch <= 31) && ch != '\t' && ch != '\n') {
+        printf("^");
+        ch = ch + 64;
+      } else if (ch == 127) {
+        printf("^");
+        ch = ch - 64;
+      }
+    }
+    if(flag->error == 1){
+      
+    }
+
+    putchar(ch);
+    prev = ch;
   }
-}
 
-//Функция для подсчета непустых строк
-void printNotNUll(const char* name) {
-    FILE* file = fopen(name, "r");
-    if (file == NULL) {
-        printf("Ошибка открытия файла.\n");
-        return;
-    }
-
-    int lineNumber = 1;
-    char line[1024];
-    while (fgets(line, sizeof(line), file)) {
-        int lineLength = strlen(line);
-        int isEmptyLine = 1;
-
-        for (int i = 0; i < lineLength; i++) {
-            if (!isspace(line[i])) {
-                isEmptyLine = 0;
-                break;
-            }
-        }
-
-        if (!isEmptyLine) {
-            printf("%d ", lineNumber);
-            lineNumber++;
-        }
-
-        printf("%s", line);
-    }
-
-    fclose(file);
-}
-
-
-// Функция для счета символов
-int count_simb(const char* name) {
-  FILE* f = fopen(name, "rt");
-  int c = fgetc(f);
-  int count = 0;
-  while (c != EOF) {
-    c = fgetc(f);
-    count++;
-  }
-  fclose(f);
-  return count;
+  fclose(file);
 }
