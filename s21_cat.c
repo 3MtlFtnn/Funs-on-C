@@ -5,24 +5,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <ctype.h>
-
-typedef struct {
-  int count;
-  int print;
-  int vET;
-  int NN;
-  int dollar;
-  int spaces;
-  int tab;
-  int error;
-} flags;
-
+#include "flags.h"
 int readd(int argc,  char* argv[], flags* flag);
 void out(char* fp, flags* flag);
 
 int main(int argc, char* argv[]) {
-  int opt;
-  int opt_index = 0;
+  __attribute__((unused))int opt;
+  __attribute__((unused))int opt_index = 0;
   int files_count;
   flags option = {0};
   files_count = readd(argc, argv, &option);
@@ -32,7 +21,7 @@ int main(int argc, char* argv[]) {
     return 1;
   } else {
     while (files_count < argc) {
-      char* fp;
+      __attribute__((unused))char* fp;
       fp = argv[files_count];
       out(argv[files_count], &option);
       files_count++;
